@@ -10,6 +10,8 @@ COMPRESSED = NO
 CFLAGS = -Wall -Wextra -Oz
 CXXFLAGS = -Wall -Wextra -Oz
 
+SRC = src/main.c src/words.c
+
 # ----------------------------
 
 include $(shell cedev-config --makefile)
