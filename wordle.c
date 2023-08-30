@@ -6,7 +6,14 @@
 #include <string.h>
 #include <time.h>
 
+// Colors
+#define NORMAL "\x1b[m"
+#define GREEN "\x1b[32m"
+#define CYAN "\x1b[36m"
+#define YELLOW "\x1b[33m"
+
 #define WORD_COUNT 5
+#define LENGTH 5
 
 // Booleans
 #define true 1
@@ -16,24 +23,13 @@
 int letterInWord(char letter, char word[6])
 {
 	// Loop through every character in the word
-	for (size_t i = 0; i < 5; i++)
+	for (size_t i = 0; i < LENGTH; i++)
 	{
 		if (letter == word[i]) return true;
 	}
 
 	return false;
 }
-
-//! debug thing to print array
-void printArray(int array[])
-{
-	printf("%d, %d, %d, %d, %d\n", array[0], array[1], array[2], array[3], array[4], array[5]);
-}
-void printArray(char array[])
-{
-	printf("%c, %c, %c, %c, %c\n", array[0], array[1], array[2], array[3], array[4], array[5]);
-}
-
 
 int main() {
 
@@ -43,10 +39,10 @@ int main() {
 	// Words
 	char wordCount[WORD_COUNT][6] = {
 		"camus",
-        "speed",
-        "array",
-        "polio",
-        "stray"
+		"speed",
+		"array",
+		"polio",
+		"stray"
 	};
 	
 	// Get a random index from the array
@@ -64,29 +60,32 @@ int main() {
 		scanf("%s", input);
 
 		// True represents the state of the current index of the main word array
-		int wrongPlace[5] = { false, false, false, false, false };
-		int notInWord[5] = { false, false, false, false, false };
-		int correct[5] = { false, false, false, false, false };
+		int wrongPlace[LENGTH] = { false, false, false, false, false };
+		int notInWord[LENGTH] = { false, false, false, false, false };
+		int correct[LENGTH] = { false, false, false, false, false };
 
 		// Loop through each character in the word
-		for (size_t i = 0; i < 5; i++)
+		for (size_t j = 0; j < LENGTH; j++)
 		{
 			// Check for if the current letter is in the correct position
-			if (input[i] == word[i]) correct[i] = true;
-			else if (letterInWord(input[i], word)) wrongPlace[i] = true;
-			else notInWord[i] = true;
+			if (input[j] == word[j]) correct[j] = true;
+			else if (letterInWord(input[j], word)) wrongPlace[j] = true;
+			else notInWord[j] = true;
 		}
 
-		printArray(word);
-		printArray(input);
-		printArray(wrongPlace);
-		printArray(notInWord);
-		printArray(correct);
+		// Print the result for their input
+		for (size_t j = 0; j < LENGTH; j++)
+		{
+			// Check for what the output thingy is
+			if (correct[j] == true) printf("%s%c%s", GREEN, input[j], NORMAL);
+			if (wrongPlace[j] == true) printf("%s%c%s", YELLOW, input[j], NORMAL);
+			if (notInWord[j] == true) printf("%s%c%s", CYAN, input[j], NORMAL);
+		}
 
 		// Check for if they win
-		if (correct[0] && correct[1] && correct[2] && correct[3] && correct[5])
+		if (correct[0] && correct[1] && correct[2] && correct[3] && correct[4])
 		{
-			printf("win");
+			printf("\nwin");
 			break;
 		}
 	}
