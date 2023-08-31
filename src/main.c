@@ -14,12 +14,24 @@ short clamp(short value, short min, short max)
 	return value;
 }
 
+// Check for if a word contains a character
+short letterInWord(char letter, char word[6])
+{
+	// Loop through every character in the word
+	for (size_t i = 0; i < 5; i++)
+	{
+		if (letter == word[i]) return true;
+	}
+
+	return false;
+}
+
 
 int main(void) {
+	dbg_printf("[Wordle] Running\n");
+
 
 	gfx_Begin();
-
-	dbg_printf("[Wordle] Running\n");
 
 	// Handle input
 	short turn = 0;
@@ -175,6 +187,21 @@ int main(void) {
 		}
 		
 
+		
+		// True represents the state of the current index of the main word array
+		short wrongPlace[5] = { false, false, false, false, false };
+		short notInWord[5] = { false, false, false, false, false };
+		short correct[5] = { false, false, false, false, false };
+
+		// Loop through each character in the word
+		for (short i = 0; i < 5; i++)
+		{
+			// Check for if the current letter is in the correct position
+			if (inputs[turn][i] == word[i]) correct[i] = true;
+			else if (letterInWord(inputs[turn][i], word)) wrongPlace[i] = true;
+			else notInWord[i] = true;
+		}
+
 
 		// Clear screen for drawing next frame
 		gfx_FillScreen(255);
@@ -185,28 +212,35 @@ int main(void) {
 		// Draw the 6x5 boxes for the words to go into
 		// TODO: Make everything in the middle
 		short x = 0, y = 0;
-		short drawLetterIndex = 0;
 
 		for (short i = 0; i < 6; i++)
 		{
 			y += 30;
 			for (short j = 0; j < 5; j++)
 			{
+				// Get the color of the box
+				gfx_SetColor(0);
+				if (correct[j] == true) gfx_SetColor(3); // Green
+				if (wrongPlace[j] == true) gfx_SetColor(7); // Yellow
+				if (notInWord[j] == true) gfx_SetColor(22); // greyish blue
+
 				// Draw the box
+				gfx_FillRectangle(x, y, 25, 25);
+
+				// Draw the box outline
+				gfx_SetColor(0);
 				gfx_Rectangle(x, y, 25, 25);
 
 				// Draw the current letter
 				gfx_SetTextXY((x + 8), (y + 8));
-				gfx_PrintChar(toupper(inputs[i][drawLetterIndex]));
+				gfx_PrintChar(toupper(inputs[i][j]));
 
 				// Increase the x position, and move to the next character
 				x += 30;
-				drawLetterIndex++;
 			}
 
 			// Reset for a new word
 			x = 0;
-			drawLetterIndex = 0;
 		}
 
 
