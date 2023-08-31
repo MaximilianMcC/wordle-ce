@@ -5,6 +5,16 @@
 #include <sys/timers.h>
 #include <debug.h> //TODO: Remove this when done
 
+
+// Clamp a number between a lower and upper value
+short clamp(short value, short min, short max)
+{
+	if (value > max) return max;
+	if (value < min) return min;
+	return value;
+}
+
+
 int main(void) {
 
 	gfx_Begin();
@@ -13,6 +23,11 @@ int main(void) {
 
 	char input[6] = ""; //? makes it all null terminators: "\0\0\0\0\0\0"
 	short letterIndex = 0;
+
+
+	// Get the random word
+	// TODO: Get the random word
+	char word[6] = "bride";
 
 	// Main loop
 	while (true) {
@@ -130,12 +145,20 @@ int main(void) {
 				break;
 		}
 
+		// Check for if they want to remove a letter
+		if (key == sk_Del)
+		{
+			letterIndex = clamp((letterIndex - 1), 0, 5);
+			input[letterIndex] = '\0';
+		}
+
 		// Add the letter to the index
 		if (letter != '\0' && letterIndex < 5)
 		{
 			input[letterIndex] = letter;
-			letterIndex++;
+			letterIndex = clamp((letterIndex + 1), 0, 5);
 		}
+
 		
 
 
