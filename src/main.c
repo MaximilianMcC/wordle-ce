@@ -19,9 +19,11 @@ int main(void) {
 
 	gfx_Begin();
 
-	dbg_printf("Running\n");
+	dbg_printf("[Wordle] Running\n");
 
-	char input[6] = ""; //? makes it all null terminators: "\0\0\0\0\0\0"
+	// Handle input
+	short turn = 0;
+	char inputs[6][6] = { "\0", "\0", "\0", "\0", "\0" };
 	short letterIndex = 0;
 
 
@@ -149,16 +151,28 @@ int main(void) {
 		if (key == sk_Del)
 		{
 			letterIndex = clamp((letterIndex - 1), 0, 5);
-			input[letterIndex] = '\0';
+			inputs[turn][letterIndex] = '\0';
 		}
 
-		// Add the letter to the index
+		// Add the letter to the word
 		if (letter != '\0' && letterIndex < 5)
 		{
-			input[letterIndex] = letter;
+			inputs[turn][letterIndex] = letter;
 			letterIndex = clamp((letterIndex + 1), 0, 5);
 		}
 
+		// Submit turn/input/guess thingy
+		if (key == sk_Enter && letterIndex >= 5)
+		{
+			// Move on the the next turn, or end the game if they have used all turns
+			turn++;
+			letterIndex = 0;
+			if (turn >= 6)
+			{
+				dbg_printf("[Wordle] end game\n");
+				break;
+			}
+		}
 		
 
 
@@ -183,7 +197,7 @@ int main(void) {
 
 				// Draw the current letter
 				gfx_SetTextXY((x + 8), (y + 8));
-				gfx_PrintChar(toupper(input[drawLetterIndex]));
+				gfx_PrintChar(toupper(inputs[i][drawLetterIndex]));
 
 				// Increase the x position, and move to the next character
 				x += 30;
