@@ -18,9 +18,10 @@
 // Colors
 #define BACKGROUND 32
 #define FOREGROUND 254 // 255 is transparent, so using 245
-#define CORRECT 71
+#define OUTLINE 74
+#define CORRECT 67
 #define WRONG_PLACE 229
-#define NOT_IN_WORD 117
+#define NOT_IN_WORD 32
 
 
 // Clamp a number between a lower and upper value
@@ -85,7 +86,7 @@ int main(void) {
 
 	// Get the word
 	// TODO: Make this random
-	char word[6] = "onion";
+	char word[6] = "among";
 
 
 	// Main loop
@@ -265,24 +266,27 @@ int main(void) {
 		// Draw the boxes
 		for (short i = 0; i < MAX_TURNS; i++)
 		{
-			// Get the word/input at the current index
-			struct Word currentWord = inputs[i];
-
 			for (short j = 0; j < WORD_LENGTH; j++)
 			{
-				// Draw the box background for the current character
+
+				// Get the box color
 				gfx_SetColor(BACKGROUND);
+				if (inputs[i].correct[j] == true) gfx_SetColor(CORRECT);
+				else if (inputs[i].wrongPlace[j] == true) gfx_SetColor(WRONG_PLACE);
+				else if (inputs[i].notInWord[j] == true) gfx_SetColor(NOT_IN_WORD);
+
+				// Draw the box background for the current character
 				gfx_FillRectangle(x, y, BOX_SIZE, BOX_SIZE);
 
 				// Draw the box outline for the current character
-				gfx_SetColor(FOREGROUND);
+				gfx_SetColor(OUTLINE);
 				gfx_Rectangle(x, y, BOX_SIZE, BOX_SIZE);
 
 				// Print the current character
 				gfx_SetTextFGColor(254);
 				gfx_SetTextScale(2, 2);
 				gfx_SetTextXY((x + TEXT_OFFSET), (y + TEXT_OFFSET));
-				gfx_PrintChar(toupper(currentWord.input[j]));
+				gfx_PrintChar(toupper(inputs[i].input[j]));
 
 				// Increase the x position for drawing the next box
 				x += BOX_SIZE + PADDING;
