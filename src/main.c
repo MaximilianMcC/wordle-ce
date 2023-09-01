@@ -6,6 +6,23 @@
 #include <debug.h> //TODO: Remove this when done
 
 
+// Game settings
+#define MAX_TURNS 6
+#define WORD_LENGTH 5
+
+// Drawing dimensions
+#define BOX_SIZE 25
+#define PADDING 10
+#define TEXT_OFFSET 5 //TODO: Use maths to make this real
+
+// Colors
+#define BACKGROUND 32
+#define FOREGROUND 254 // 255 is transparent, so using 245
+#define CORRECT 71
+#define WRONG_PLACE 229
+#define NOT_IN_WORD 117
+
+
 // Clamp a number between a lower and upper value
 short clamp(short value, short min, short max)
 {
@@ -27,21 +44,29 @@ short letterInWord(char letter, char word[6])
 }
 
 
+
+// Word
+struct Word
+{
+	char input[6];
+	short wrongPlace[5];
+	short notInWord[5];
+	short correct[5];
+};
+
+
+
 int main(void) {
 	dbg_printf("[Wordle] Running\n");
-
-
 	gfx_Begin();
 
-	// Handle input
+
+
+	// Handle all of the words and stuff
 	short turn = 0;
-	char inputs[6][6] = { "\0", "\0", "\0", "\0", "\0" };
-	short letterIndex = 0;
+	struct Word inputs[MAX_TURNS];
 
-
-	// Get the random word
-	// TODO: Get the random word
-	char word[6] = "bride";
+	
 
 	// Main loop
 	while (true) {
@@ -159,90 +184,56 @@ int main(void) {
 				break;
 		}
 
-		// Check for if they want to remove a letter
-		if (key == sk_Del)
-		{
-			letterIndex = clamp((letterIndex - 1), 0, 5);
-			inputs[turn][letterIndex] = '\0';
-		}
-
-		// Add the letter to the word
-		if (letter != '\0' && letterIndex < 5)
-		{
-			inputs[turn][letterIndex] = letter;
-			letterIndex = clamp((letterIndex + 1), 0, 5);
-		}
-
-		// Submit turn/input/guess thingy
-		if (key == sk_Enter && letterIndex >= 5)
-		{
-			// Move on the the next turn, or end the game if they have used all turns
-			turn++;
-			letterIndex = 0;
-			if (turn >= 6)
-			{
-				dbg_printf("[Wordle] end game\n");
-				break;
-			}
-		}
-		
-
-		
-		// True represents the state of the current index of the main word array
-		short wrongPlace[5] = { false, false, false, false, false };
-		short notInWord[5] = { false, false, false, false, false };
-		short correct[5] = { false, false, false, false, false };
-
-		// Loop through each character in the word
-		for (short i = 0; i < 5; i++)
-		{
-			// Check for if the current letter is in the correct position
-			if (inputs[turn][i] == word[i]) correct[i] = true;
-			else if (letterInWord(inputs[turn][i], word)) wrongPlace[i] = true;
-			else notInWord[i] = true;
-		}
-
 
 		// Clear screen for drawing next frame
-		gfx_FillScreen(255);
+		gfx_FillScreen(BACKGROUND);
 
-		// TODO: Draw a title of some sorts
-		// TODO: Instructions and information
 
-		// Draw the 6x5 boxes for the words to go into
-		// TODO: Make everything in the middle
-		short x = 0, y = 0;
+		// Get dimensions and stuff
+		// TODO: Hardcode because all calculators have the same size screen
+		short x = 86; //? origin to start in the middle (i think)
+		short y = PADDING;
 
-		for (short i = 0; i < 6; i++)
+		// Draw the boxes
+		for (short i = 0; i < MAX_TURNS; i++)
 		{
-			y += 30;
-			for (short j = 0; j < 5; j++)
+
+			// Get the word/input at the current index
+			struct Word currentWord = inputs[turn];
+
+			for (short j = 0; j < WORD_LENGTH; j++)
 			{
-				// Get the color of the box
-				gfx_SetColor(0);
-				if (correct[j] == true) gfx_SetColor(3); // Green
-				if (wrongPlace[j] == true) gfx_SetColor(7); // Yellow
-				if (notInWord[j] == true) gfx_SetColor(22); // greyish blue
 
-				// Draw the box
-				gfx_FillRectangle(x, y, 25, 25);
+				// Draw the box background for the current character
+				gfx_SetColor(BACKGROUND);
+				gfx_FillRectangle(x, y, BOX_SIZE, BOX_SIZE);
 
-				// Draw the box outline
-				gfx_SetColor(0);
-				gfx_Rectangle(x, y, 25, 25);
+				// Draw the box outline for the current character
+				gfx_SetColor(FOREGROUND);
+				gfx_Rectangle(x, y, BOX_SIZE, BOX_SIZE);
+				
 
-				// Draw the current letter
-				gfx_SetTextXY((x + 8), (y + 8));
-				gfx_PrintChar(toupper(inputs[i][j]));
+				// Print the current character
+				gfx_SetTextFGColor(254);
+				gfx_SetTextScale(2, 2);
+				gfx_SetTextXY((x + TEXT_OFFSET), (y + TEXT_OFFSET));
+				// gfx_PrintChar(toupper(currentWord.input[j]));
+				gfx_PrintChar("A");
 
-				// Increase the x position, and move to the next character
-				x += 30;
+				dbg_printf("drawing box at %d, %d\n", x, y);
+
+
+				// Increase the x position for drawing the next box
+				x += BOX_SIZE + PADDING;
 			}
 
-			// Reset for a new word
-			x = 0;
-		}
+			// Increase the y position for drawing the next word
+			y += BOX_SIZE + PADDING;
 
+			// Reset the x stuff for the drawing the next word
+			x = 86;
+		}
+		
 
 		// Update screen
 		gfx_SwapDraw();
