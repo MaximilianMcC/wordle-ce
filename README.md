@@ -12,3 +12,4 @@ A clone of [Wordle](https://www.nytimes.com/games/wordle/index.html) made for th
 - Both dark and light theme for the background, then more customizable themes for the tile backgrounds
 - Check for if the word exists in the word list
 - Only show how many wrong place words there are in thw work
+- Fancy word flipping animation thingy

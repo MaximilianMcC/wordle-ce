@@ -35,7 +35,7 @@ short clamp(short value, short min, short max)
 short letterInWord(char letter, char word[6])
 {
 	// Loop through every character in the word
-	for (size_t i = 0; i < 5; i++)
+	for (short i = 0; i < WORD_LENGTH; i++)
 	{
 		if (letter == word[i]) return true;
 	}
@@ -67,7 +67,26 @@ int main(void) {
 	short inputIndex = 0;
 	struct Word inputs[MAX_TURNS];
 
+
 	
+	// Setup all of the structs
+	// TODO: Find a better way to do this
+	for (short i = 0; i < MAX_TURNS; i++)
+	{
+		inputs[i] = (struct Word) {
+			.input = "\0",
+			.wrongPlace = { false, false, false, false, false },
+			.notInWord = { false, false, false, false, false },
+			.correct = { false, false, false, false, false }
+		};
+	}
+	
+
+
+	// Get the word
+	// TODO: Make this random
+	char word[6] = "onion";
+
 
 	// Main loop
 	while (true) {
@@ -188,7 +207,7 @@ int main(void) {
 		// Add or remove a character from the current word
 		if (letter != '\0' && inputIndex < WORD_LENGTH)
 		{
-			dbg_printf("[Wordle] Add letter\n");
+			dbg_printf("[Wordle] Add letter (turn %d)\n", turn);
 		
 			// Add the new letter at the current index
 			inputs[turn].input[inputIndex] = letter;
@@ -198,7 +217,7 @@ int main(void) {
 		}
 		else if (key == sk_Del && inputIndex >= 0)
 		{
-			dbg_printf("[Wordle] Remove letter\n");
+			dbg_printf("[Wordle] Remove letter (turn %d)\n", turn);
 
 			// Decrease the index to get back to the previous letter
 			inputIndex = clamp((inputIndex - 1), 0, WORD_LENGTH);
@@ -207,6 +226,32 @@ int main(void) {
 			inputs[turn].input[inputIndex] = '\0';
 		}
 
+		// Submit the current guess 
+		if (key == sk_Enter && inputIndex >= WORD_LENGTH)
+		{
+			// Check for if the game has ended
+			if ((turn + 1) >= MAX_TURNS)
+			{
+				dbg_printf("[Wordle] Game finished.\n");
+				break;
+			}
+
+
+
+			// Loop through each character in the word and check its status
+			for (short i = 0; i < WORD_LENGTH; i++)
+			{
+				if (inputs[turn].input[i] == word[i]) inputs[turn].correct[i] = true;
+				else if (letterInWord(inputs[turn].input[i], word)) inputs[turn].wrongPlace[i] = true;
+				else inputs[turn].notInWord[i] = true;
+			}
+			
+
+
+			// Increase the turn
+			turn++;
+			inputIndex= 0;
+		}
 
 
 		// Clear screen for drawing the next frame
@@ -221,7 +266,7 @@ int main(void) {
 		for (short i = 0; i < MAX_TURNS; i++)
 		{
 			// Get the word/input at the current index
-			struct Word currentWord = inputs[turn];
+			struct Word currentWord = inputs[i];
 
 			for (short j = 0; j < WORD_LENGTH; j++)
 			{
@@ -253,6 +298,8 @@ int main(void) {
 		// Update the screen
 		gfx_SwapDraw();
 	}
+
+
 
 	// End
 	gfx_End();
