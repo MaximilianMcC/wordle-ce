@@ -5,6 +5,8 @@
 #include <sys/timers.h>
 #include <debug.h> //TODO: Remove this when done
 
+#include "words.h"
+
 
 // Game settings
 #define MAX_TURNS 6
@@ -84,9 +86,11 @@ int main(void) {
 	
 
 
-	// Get the word
-	// TODO: Make this random
-	char word[6] = "among";
+	// Get a random word from the word array
+	char word[6];
+	int index = rand() % wordCount;
+	snprintf(word, 6, "%s", words[index]);
+	dbg_printf("[Wordle] Selected word \"%s\"", word);
 
 
 	// Main loop
