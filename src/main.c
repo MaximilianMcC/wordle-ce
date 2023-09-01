@@ -64,6 +64,7 @@ int main(void) {
 
 	// Handle all of the words and stuff
 	short turn = 0;
+	short inputIndex = 0;
 	struct Word inputs[MAX_TURNS];
 
 	
@@ -184,26 +185,46 @@ int main(void) {
 				break;
 		}
 
+		// Add or remove a character from the current word
+		if (letter != '\0' && inputIndex < WORD_LENGTH)
+		{
+			dbg_printf("[Wordle] Add letter\n");
+		
+			// Add the new letter at the current index
+			inputs[turn].input[inputIndex] = letter;
 
-		// Clear screen for drawing next frame
+			// Increase the index for the next letter
+			inputIndex = clamp((inputIndex + 1), 0, WORD_LENGTH);
+		}
+		else if (key == sk_Del && inputIndex >= 0)
+		{
+			dbg_printf("[Wordle] Remove letter\n");
+
+			// Decrease the index to get back to the previous letter
+			inputIndex = clamp((inputIndex - 1), 0, WORD_LENGTH);
+
+			// Make the letter at the new index nothing
+			inputs[turn].input[inputIndex] = '\0';
+		}
+
+
+
+		// Clear screen for drawing the next frame
 		gfx_FillScreen(BACKGROUND);
-
 
 		// Get dimensions and stuff
 		// TODO: Hardcode because all calculators have the same size screen
-		short x = 86; //? origin to start in the middle (i think)
+		short x = 78; //? origin to start in the middle (i think)
 		short y = PADDING;
 
 		// Draw the boxes
 		for (short i = 0; i < MAX_TURNS; i++)
 		{
-
 			// Get the word/input at the current index
 			struct Word currentWord = inputs[turn];
 
 			for (short j = 0; j < WORD_LENGTH; j++)
 			{
-
 				// Draw the box background for the current character
 				gfx_SetColor(BACKGROUND);
 				gfx_FillRectangle(x, y, BOX_SIZE, BOX_SIZE);
@@ -211,17 +232,12 @@ int main(void) {
 				// Draw the box outline for the current character
 				gfx_SetColor(FOREGROUND);
 				gfx_Rectangle(x, y, BOX_SIZE, BOX_SIZE);
-				
 
 				// Print the current character
 				gfx_SetTextFGColor(254);
 				gfx_SetTextScale(2, 2);
 				gfx_SetTextXY((x + TEXT_OFFSET), (y + TEXT_OFFSET));
-				// gfx_PrintChar(toupper(currentWord.input[j]));
-				gfx_PrintChar("A");
-
-				dbg_printf("drawing box at %d, %d\n", x, y);
-
+				gfx_PrintChar(toupper(currentWord.input[j]));
 
 				// Increase the x position for drawing the next box
 				x += BOX_SIZE + PADDING;
@@ -231,11 +247,10 @@ int main(void) {
 			y += BOX_SIZE + PADDING;
 
 			// Reset the x stuff for the drawing the next word
-			x = 86;
+			x = 78;
 		}
 		
-
-		// Update screen
+		// Update the screen
 		gfx_SwapDraw();
 	}
 
