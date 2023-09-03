@@ -2,8 +2,9 @@
 #include <ctype.h>
 #include <tice.h>
 #include <graphx.h>
-#include <sys/timers.h>
-#include <debug.h> //TODO: Remove this when done
+#include <time.h>
+#include <string.h>
+#include <debug.h>
 
 #include "words.h"
 
@@ -15,15 +16,17 @@
 // Drawing dimensions
 #define BOX_SIZE 25
 #define PADDING 10
-#define TEXT_OFFSET 5 //TODO: Use maths to make this real
+#define TEXT_OFFSET 5
 
 // Colors
-#define BACKGROUND 32
-#define FOREGROUND 254 // 255 is transparent, so using 245
-#define OUTLINE 74
+#define BACKGROUND 0
+#define FOREGROUND 223 //! 255 is transparent, so using 245
+#define NOTIFICATION_BACKGROUND 223
+#define NOTIFICATION_FOREGROUND 0
+#define OUTLINE 10
 #define CORRECT 67
 #define WRONG_PLACE 229
-#define NOT_IN_WORD 32
+#define NOT_IN_WORD 74
 
 
 // Clamp a number between a lower and upper value
@@ -46,6 +49,31 @@ short letterInWord(char letter, char word[6])
 	return false;
 }
 
+// Show a notification in the top of the screen
+void showNotification(char text[30])
+{
+	// Calculate the width based on the text width and padding
+	short width = 0, textWidth = 0;
+	for (unsigned int i = 0; i < strlen(text); i++)
+	{
+		textWidth += gfx_GetCharWidth(text[i]);
+	}
+	width = PADDING + textWidth + PADDING;
+
+	// Get the draw positions
+	short x = (LCD_WIDTH - width) / 2;
+	short y = 15;
+
+	// Draw the background
+	// TODO: Have rounded corners on the background rectangle
+	gfx_SetColor(NOTIFICATION_BACKGROUND);
+	gfx_FillRectangle(x, y, width, BOX_SIZE);
+	
+	// Draw the text
+	// gfx_SetTextScale(1, 1);
+	gfx_SetTextFGColor(NOTIFICATION_FOREGROUND);
+	gfx_PrintStringXY(text, (x + PADDING), (y + TEXT_OFFSET));
+}
 
 
 // Word
@@ -70,6 +98,9 @@ int main(void) {
 	short inputIndex = 0;
 	struct Word inputs[MAX_TURNS];
 
+	// Game state stuff
+	bool won = false;
+
 
 	
 	// Setup all of the structs
@@ -85,12 +116,14 @@ int main(void) {
 	}
 	
 
+	// Set the random seed as the current time
+	srand(time(NULL));
 
 	// Get a random word from the word array
 	char word[6];
 	int index = rand() % wordCount;
 	snprintf(word, 6, "%s", words[index]);
-	dbg_printf("[Wordle] Selected word \"%s\"", word);
+	dbg_printf("[Wordle] Selected word \"%s\"\n", word);
 
 
 	// Main loop
@@ -252,6 +285,9 @@ int main(void) {
 			}
 			
 
+			// Check for if they won
+			won = (inputs[turn].correct[0] == true && inputs[turn].correct[1] == true && inputs[turn].correct[2] == true && inputs[turn].correct[3] == true && inputs[turn].correct[4] == true);
+
 
 			// Increase the turn
 			turn++;
@@ -287,7 +323,7 @@ int main(void) {
 				gfx_Rectangle(x, y, BOX_SIZE, BOX_SIZE);
 
 				// Print the current character
-				gfx_SetTextFGColor(254);
+				gfx_SetTextFGColor(FOREGROUND);
 				gfx_SetTextScale(2, 2);
 				gfx_SetTextXY((x + TEXT_OFFSET), (y + TEXT_OFFSET));
 				gfx_PrintChar(toupper(inputs[i].input[j]));
@@ -301,6 +337,12 @@ int main(void) {
 
 			// Reset the x stuff for the drawing the next word
 			x = 78;
+		}
+
+		// Check for if they won, and draw the win screen
+		if (won == true)
+		{
+			showNotification("Correct!");
 		}
 		
 		// Update the screen
