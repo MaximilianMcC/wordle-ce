@@ -193,10 +193,16 @@ int main(void) {
 		// Clear screen for drawing the next frame
 		gfx_FillScreen(BACKGROUND);
 
+		// Draw a title and a line under it
+		gfx_SetTextScale(2, 2);
+		gfx_SetTextFGColor(FOREGROUND);
+		gfx_PrintStringXY("Wordle", 115, 5);
+		gfx_SetColor(OUTLINE);
+		gfx_Line(0, BOX_SIZE, LCD_WIDTH, BOX_SIZE);
+
 		// Get dimensions and stuff
-		// TODO: Hardcode because all calculators have the same size screen
-		short x = 78; //? origin to start in the middle (i think)
-		short y = PADDING;
+		short x = 78; //? origin to start in the middle
+		short y = 30;
 
 		// Draw the boxes
 		for (short i = 0; i < MAX_TURNS; i++)
