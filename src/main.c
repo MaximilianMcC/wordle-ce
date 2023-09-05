@@ -38,7 +38,7 @@ short clamp(short value, short min, short max)
 }
 
 // Check for if a word contains a character
-short letterInWord(char letter, char word[6])
+short letterInWord(char letter, char word[5])
 {
 	// Loop through every character in the word
 	for (short i = 0; i < WORD_LENGTH; i++)
@@ -46,6 +46,19 @@ short letterInWord(char letter, char word[6])
 		if (letter == word[i]) return true;
 	}
 
+	return false;
+}
+
+// Check for if the word is in the word list
+bool wordInList(char word[6])
+{
+	// Loop through each word in the word list
+	for (int i = 0; i < wordCount; i++)
+	{
+		if (strcmp(words[i], word) == 0) return true;
+	}
+	
+	// Wasn't found
 	return false;
 }
 
@@ -170,23 +183,43 @@ int main(void) {
 			}
 
 
-
-			// Loop through each character in the word and check its status
-			for (short i = 0; i < WORD_LENGTH; i++)
+			// Check for if the word is in the word list
+			dbg_printf("%s\n", inputs[turn].input);
+			if (wordInList(inputs[turn].input) == true)
 			{
-				if (inputs[turn].input[i] == word[i]) inputs[turn].correct[i] = true;
-				else if (letterInWord(inputs[turn].input[i], word)) inputs[turn].wrongPlace[i] = true;
-				else inputs[turn].notInWord[i] = true;
+				dbg_printf("yes\n");
+				// Loop through each character in the word and check its status
+				for (short i = 0; i < WORD_LENGTH; i++)
+				{
+					if (inputs[turn].input[i] == word[i]) inputs[turn].correct[i] = true;
+					else if (letterInWord(inputs[turn].input[i], word)) inputs[turn].wrongPlace[i] = true;
+					else inputs[turn].notInWord[i] = true;
+				}
+				
+
+				// Check for if they won
+				won = (inputs[turn].correct[0] == true && inputs[turn].correct[1] == true && inputs[turn].correct[2] == true && inputs[turn].correct[3] == true && inputs[turn].correct[4] == true);
+
+
+				// Increase the turn
+				turn++;
+				inputIndex= 0;
 			}
-			
+			else
+			{
+				dbg_printf("no\n");
+				// Reset the current input for the turn
+				// TODO: Don't modify each index individually. Set as a string or something
+				inputs[turn].input[0] = '\0';
+				inputs[turn].input[1] = '\0';
+				inputs[turn].input[2] = '\0';
+				inputs[turn].input[3] = '\0';
+				inputs[turn].input[4] = '\0';
+				inputs[turn].input[5] = '\0';
+				inputIndex = 0;
 
-			// Check for if they won
-			won = (inputs[turn].correct[0] == true && inputs[turn].correct[1] == true && inputs[turn].correct[2] == true && inputs[turn].correct[3] == true && inputs[turn].correct[4] == true);
-
-
-			// Increase the turn
-			turn++;
-			inputIndex= 0;
+				//TODO: Show a notification saying that the word is wong
+			}
 		}
 
 
