@@ -65,13 +65,13 @@ bool wordInList(char word[6])
 
 // Notification timing systems
 // TODO: Don't make these variables public and stuff
-bool showingNotification = false;
+bool showNotification = false;
 unsigned int notificationStartTime;
 
-// Show a notification in the top of the screen
-void showNotification(char text[30])
+// Show a notification in the top of the screen if its possible
+void displayNotification(char text[30])
 {
-	if (showingNotification)
+	if (showNotification)
 	{
 		// Get the elapsed time
 		unsigned int currentTime = rtc_Time();
@@ -80,10 +80,13 @@ void showNotification(char text[30])
 		// Check for if the time is up or not
 		if (elapsedTime >= NOTIFICATION_DURATION)
 		{
-			showingNotification = false;
+			// Reset everything
+			showNotification = false;
+			notificationStartTime = 0;
 			return;
 		}
 	}
+	else return;
 
 	// Calculate the width based on the text width and padding
 	gfx_SetTextScale(1, 1);
@@ -122,6 +125,7 @@ struct Word
 
 int main(void) {
 	dbg_printf("[Wordle] Running\n");
+	dbg_printf("[Wordle] Loaded %d words.\n", wordCount);
 	gfx_Begin();
 
 
@@ -133,6 +137,7 @@ int main(void) {
 
 	// Game state stuff
 	bool won = false;
+	bool gameOver = false;
 
 
 	
@@ -166,15 +171,16 @@ int main(void) {
 		uint8_t key = os_GetCSC();
 		if (key == sk_Clear) break;
 
+		// Stop doing stuff if the game is over
+		if (gameOver == true) continue;
+
 		// Convert the key to c char using the index of a string
 		const char *chars = "\0\0\0\0\0\0\0\0\0\0\0wrmh\0\0\0\0vqlg\0\0\0zupkfc\0\0ytojeb\0\0xsnida\0\0\0\0\0\0\0\0";
 		char letter = chars[key];
 
 		// Add or remove a character from the current word
 		if (letter != '\0' && inputIndex < WORD_LENGTH)
-		{
-			dbg_printf("[Wordle] Add letter (turn %d)\n", turn);
-		
+		{		
 			// Add the new letter at the current index
 			inputs[turn].input[inputIndex] = letter;
 
@@ -183,8 +189,6 @@ int main(void) {
 		}
 		else if (key == sk_Del && inputIndex >= 0)
 		{
-			dbg_printf("[Wordle] Remove letter (turn %d)\n", turn);
-
 			// Decrease the index to get back to the previous letter
 			inputIndex = clamp((inputIndex - 1), 0, WORD_LENGTH);
 
@@ -221,9 +225,8 @@ int main(void) {
 				if (won)
 				{
 					notificationStartTime = rtc_Time();
-					showingNotification = true;
+					showNotification = true;
 				}
-
 
 				// Increase the turn
 				turn++;
@@ -245,7 +248,6 @@ int main(void) {
 				//TODO: Show a notification saying that the word is wong
 			}
 		}
-
 
 		// Clear screen for drawing the next frame
 		gfx_FillScreen(BACKGROUND);
@@ -298,7 +300,7 @@ int main(void) {
 		}
 
 		// Check for if they won, and draw the win screen
-		if (won) showNotification("Correct!");
+		if (won) displayNotification("Correct!");
 		
 		// Update the screen
 		gfx_SwapDraw();
