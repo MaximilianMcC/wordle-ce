@@ -17,6 +17,7 @@
 #define BOX_SIZE 25
 #define PADDING 10
 #define TEXT_OFFSET 5
+#define NOTIFICATION_DURATION 3 //? Measured in seconds
 
 // Colors
 #define BACKGROUND 0
@@ -62,10 +63,30 @@ bool wordInList(char word[6])
 	return false;
 }
 
+// Notification timing systems
+// TODO: Don't make these variables public and stuff
+bool showingNotification = false;
+unsigned int notificationStartTime;
+
 // Show a notification in the top of the screen
 void showNotification(char text[30])
 {
+	if (showingNotification)
+	{
+		// Get the elapsed time
+		unsigned int currentTime = rtc_Time();
+		unsigned int elapsedTime = currentTime - notificationStartTime;
+
+		// Check for if the time is up or not
+		if (elapsedTime >= NOTIFICATION_DURATION)
+		{
+			showingNotification = false;
+			return;
+		}
+	}
+
 	// Calculate the width based on the text width and padding
+	gfx_SetTextScale(1, 1);
 	short width = 0, textWidth = 0;
 	for (unsigned int i = 0; i < strlen(text); i++)
 	{
@@ -83,7 +104,6 @@ void showNotification(char text[30])
 	gfx_FillRectangle(x, y, width, BOX_SIZE);
 	
 	// Draw the text
-	// gfx_SetTextScale(1, 1);
 	gfx_SetTextFGColor(NOTIFICATION_FOREGROUND);
 	gfx_PrintStringXY(text, (x + PADDING), (y + TEXT_OFFSET));
 }
@@ -184,10 +204,9 @@ int main(void) {
 
 
 			// Check for if the word is in the word list
-			dbg_printf("%s\n", inputs[turn].input);
 			if (wordInList(inputs[turn].input) == true)
 			{
-				dbg_printf("yes\n");
+				dbg_printf("[Wordle] Valid word entered.\n");
 				// Loop through each character in the word and check its status
 				for (short i = 0; i < WORD_LENGTH; i++)
 				{
@@ -199,6 +218,11 @@ int main(void) {
 
 				// Check for if they won
 				won = (inputs[turn].correct[0] == true && inputs[turn].correct[1] == true && inputs[turn].correct[2] == true && inputs[turn].correct[3] == true && inputs[turn].correct[4] == true);
+				if (won)
+				{
+					notificationStartTime = rtc_Time();
+					showingNotification = true;
+				}
 
 
 				// Increase the turn
@@ -207,7 +231,7 @@ int main(void) {
 			}
 			else
 			{
-				dbg_printf("no\n");
+				dbg_printf("[Wordle] Incorrect word entered.\n");
 				// Reset the current input for the turn
 				// TODO: Don't modify each index individually. Set as a string or something
 				inputs[turn].input[0] = '\0';
@@ -274,10 +298,7 @@ int main(void) {
 		}
 
 		// Check for if they won, and draw the win screen
-		if (won == true)
-		{
-			showNotification("Correct!");
-		}
+		if (won) showNotification("Correct!");
 		
 		// Update the screen
 		gfx_SwapDraw();
