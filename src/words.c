@@ -1,6 +1,6 @@
 #include "words.h"
 
-const char *words[] = {
+const char words[][6] = {
 	"cigar",
 	"rebut",
 	"humph",
@@ -1522,7 +1522,7 @@ const char *words[] = {
 	"prude",
 	"heavy",
 	"wield",
-	"femme",
+	"adieu",
 	"lasso",
 	"maize",
 	"shale",
