@@ -1,11 +1,10 @@
 #include <stdio.h>
-#include <ctype.h>
 #include <tice.h>
+#include <ctype.h>
 #include <graphx.h>
 #include <time.h>
 #include <string.h>
 #include <debug.h>
-
 #include "words.h"
 
 
@@ -172,80 +171,83 @@ int main(void) {
 		if (key == sk_Clear) break;
 
 		// Stop doing stuff if the game is over
-		if (gameOver == true) continue;
-
-		// Convert the key to c char using the index of a string
-		const char *chars = "\0\0\0\0\0\0\0\0\0\0\0wrmh\0\0\0\0vqlg\0\0\0zupkfc\0\0ytojeb\0\0xsnida\0\0\0\0\0\0\0\0";
-		char letter = chars[key];
-
-		// Add or remove a character from the current word
-		if (letter != '\0' && inputIndex < WORD_LENGTH)
-		{		
-			// Add the new letter at the current index
-			inputs[turn].input[inputIndex] = letter;
-
-			// Increase the index for the next letter
-			inputIndex = clamp((inputIndex + 1), 0, WORD_LENGTH);
-		}
-		else if (key == sk_Del && inputIndex >= 0)
+		if (gameOver == false)
 		{
-			// Decrease the index to get back to the previous letter
-			inputIndex = clamp((inputIndex - 1), 0, WORD_LENGTH);
+			// Convert the key to c char using the index of a string
+			const char *chars = "\0\0\0\0\0\0\0\0\0\0\0wrmh\0\0\0\0vqlg\0\0\0zupkfc\0\0ytojeb\0\0xsnida\0\0\0\0\0\0\0\0";
+			char letter = chars[key];
 
-			// Make the letter at the new index nothing
-			inputs[turn].input[inputIndex] = '\0';
-		}
+			// Add or remove a character from the current word
+			if (letter != '\0' && inputIndex < WORD_LENGTH)
+			{		
+				// Add the new letter at the current index
+				inputs[turn].input[inputIndex] = letter;
 
-		// Submit the current guess 
-		if (key == sk_Enter && inputIndex >= WORD_LENGTH)
-		{
-			// Check for if the game has ended
-			if ((turn + 1) >= MAX_TURNS)
+				// Increase the index for the next letter
+				inputIndex = clamp((inputIndex + 1), 0, WORD_LENGTH);
+			}
+			else if (key == sk_Del && inputIndex >= 0)
 			{
-				dbg_printf("[Wordle] Game finished.\n");
-				break;
+				// Decrease the index to get back to the previous letter
+				inputIndex = clamp((inputIndex - 1), 0, WORD_LENGTH);
+
+				// Make the letter at the new index nothing
+				inputs[turn].input[inputIndex] = '\0';
 			}
 
-
-			// Check for if the word is in the word list
-			if (wordInList(inputs[turn].input) == true)
+			// Submit the current guess 
+			if (key == sk_Enter && inputIndex >= WORD_LENGTH)
 			{
-				dbg_printf("[Wordle] Valid word entered.\n");
-				// Loop through each character in the word and check its status
-				for (short i = 0; i < WORD_LENGTH; i++)
+				// Check for if the game has ended
+				if ((turn + 1) >= MAX_TURNS) 
 				{
-					if (inputs[turn].input[i] == word[i]) inputs[turn].correct[i] = true;
-					else if (letterInWord(inputs[turn].input[i], word)) inputs[turn].wrongPlace[i] = true;
-					else inputs[turn].notInWord[i] = true;
-				}
-				
-
-				// Check for if they won
-				won = (inputs[turn].correct[0] == true && inputs[turn].correct[1] == true && inputs[turn].correct[2] == true && inputs[turn].correct[3] == true && inputs[turn].correct[4] == true);
-				if (won)
-				{
-					notificationStartTime = rtc_Time();
-					showNotification = true;
+					gameOver = true;
 				}
 
-				// Increase the turn
-				turn++;
-				inputIndex= 0;
-			}
-			else
-			{
-				dbg_printf("[Wordle] Incorrect word entered.\n");
-				// Reset the current input for the turn
-				// TODO: Don't modify each index individually. Set as a string or something
-				inputs[turn].input[0] = '\0';
-				inputs[turn].input[1] = '\0';
-				inputs[turn].input[2] = '\0';
-				inputs[turn].input[3] = '\0';
-				inputs[turn].input[4] = '\0';
-				inputs[turn].input[5] = '\0';
-				inputIndex = 0;
 
-				//TODO: Show a notification saying that the word is wong
+
+				// Check for if the word is in the word list
+				if (wordInList(inputs[turn].input) == true)
+				{
+					dbg_printf("[Wordle] Valid word entered.\n");
+					// Loop through each character in the word and check its status
+					for (short i = 0; i < WORD_LENGTH; i++)
+					{
+						if (inputs[turn].input[i] == word[i]) inputs[turn].correct[i] = true;
+						else if (letterInWord(inputs[turn].input[i], word)) inputs[turn].wrongPlace[i] = true;
+						else inputs[turn].notInWord[i] = true;
+					}
+					
+
+					// Check for if they won
+					won = (inputs[turn].correct[0] == true && inputs[turn].correct[1] == true && inputs[turn].correct[2] == true && inputs[turn].correct[3] == true && inputs[turn].correct[4] == true);
+					if (won)
+					{
+						gameOver = true;
+
+						notificationStartTime = rtc_Time();
+						showNotification = true;
+					}
+
+					// Increase the turn
+					turn++;
+					inputIndex= 0;
+				}
+				else
+				{
+					dbg_printf("[Wordle] Incorrect word entered.\n");
+					// Reset the current input for the turn
+					// TODO: Don't modify each index individually. Set as a string or something
+					inputs[turn].input[0] = '\0';
+					inputs[turn].input[1] = '\0';
+					inputs[turn].input[2] = '\0';
+					inputs[turn].input[3] = '\0';
+					inputs[turn].input[4] = '\0';
+					inputs[turn].input[5] = '\0';
+					inputIndex = 0;
+
+					//TODO: Show a notification saying that the word is wong
+				}
 			}
 		}
 
