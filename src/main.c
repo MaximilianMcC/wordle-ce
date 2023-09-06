@@ -62,13 +62,25 @@ bool wordInList(char word[6])
 	return false;
 }
 
-// Notification timing systems
+// Notification timing systems and other notification stuff
 // TODO: Don't make these variables public and stuff
+char notificationText[30];
 bool showNotification = false;
 unsigned int notificationStartTime;
 
+// Set the notification
+void SetNotification(char text[30])
+{
+    // Set the notification text
+    strncpy(notificationText, text, sizeof(notificationText) - 1);
+
+	// Setup the notification timing
+	notificationStartTime = rtc_Time();
+	showNotification = true;
+}
+
 // Show a notification in the top of the screen if its possible
-void displayNotification(char text[30])
+void displayNotification()
 {
 	if (showNotification)
 	{
@@ -90,9 +102,9 @@ void displayNotification(char text[30])
 	// Calculate the width based on the text width and padding
 	gfx_SetTextScale(1, 1);
 	short width = 0, textWidth = 0;
-	for (unsigned int i = 0; i < strlen(text); i++)
+	for (unsigned int i = 0; i < strlen(notificationText); i++)
 	{
-		textWidth += gfx_GetCharWidth(text[i]);
+		textWidth += gfx_GetCharWidth(notificationText[i]);
 	}
 	width = PADDING + textWidth + PADDING;
 
@@ -107,7 +119,7 @@ void displayNotification(char text[30])
 	
 	// Draw the text
 	gfx_SetTextFGColor(NOTIFICATION_FOREGROUND);
-	gfx_PrintStringXY(text, (x + PADDING), (y + TEXT_OFFSET));
+	gfx_PrintStringXY(notificationText, (x + PADDING), (y + TEXT_OFFSET));
 }
 
 
@@ -198,10 +210,11 @@ int main(void) {
 			// Submit the current guess 
 			if (key == sk_Enter && inputIndex >= WORD_LENGTH)
 			{
-				// Check for if the game has ended
+				// Check for if the game has ended by running out of turns
 				if ((turn + 1) >= MAX_TURNS) 
 				{
 					gameOver = true;
+					SetNotification(word);
 				}
 
 
@@ -224,9 +237,7 @@ int main(void) {
 					if (won)
 					{
 						gameOver = true;
-
-						notificationStartTime = rtc_Time();
-						showNotification = true;
+						SetNotification("Correct!");
 					}
 
 					// Increase the turn
@@ -246,7 +257,8 @@ int main(void) {
 					inputs[turn].input[5] = '\0';
 					inputIndex = 0;
 
-					//TODO: Show a notification saying that the word is wong
+					// Show a notification saying that the word is wong
+					SetNotification("Word not in list!");
 				}
 			}
 		}
@@ -301,8 +313,8 @@ int main(void) {
 			x = 78;
 		}
 
-		// Check for if they won, and draw the win screen
-		if (won) displayNotification("Correct!");
+		// Show the notifications if there are any
+		displayNotification();
 		
 		// Update the screen
 		gfx_SwapDraw();
