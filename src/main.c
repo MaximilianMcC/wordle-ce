@@ -16,7 +16,8 @@
 #define BOX_SIZE 25
 #define PADDING 10
 #define TEXT_OFFSET 5
-#define NOTIFICATION_DURATION 3 //? Measured in seconds
+#define NOTIFICATION_DURATION 2 //? Measured in seconds
+#define NOTIFICATION_HEIGHT 16
 
 // Colors
 #define BACKGROUND 0
@@ -113,9 +114,14 @@ void displayNotification()
 	short y = 15;
 
 	// Draw the background
-	// TODO: Have rounded corners on the background rectangle
 	gfx_SetColor(NOTIFICATION_BACKGROUND);
-	gfx_FillRectangle(x, y, width, BOX_SIZE);
+
+	// Rounded corners (circles)
+	gfx_FillCircle(x, (y + (NOTIFICATION_HEIGHT / 2)), (NOTIFICATION_HEIGHT / 2) - 1);
+	gfx_FillCircle((x + width), (y + (NOTIFICATION_HEIGHT / 2)), (NOTIFICATION_HEIGHT / 2) - 1);
+
+	// Main background 
+	gfx_FillRectangle(x, y, width, NOTIFICATION_HEIGHT);
 	
 	// Draw the text
 	gfx_SetTextFGColor(NOTIFICATION_FOREGROUND);
