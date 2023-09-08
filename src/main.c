@@ -216,15 +216,6 @@ int main(void) {
 			// Submit the current guess 
 			if (key == sk_Enter && inputIndex >= WORD_LENGTH)
 			{
-				// Check for if the game has ended by running out of turns
-				if ((turn + 1) >= MAX_TURNS) 
-				{
-					gameOver = true;
-					SetNotification(word);
-				}
-
-
-
 				// Check for if the word is in the word list
 				if (wordInList(inputs[turn].input) == true)
 				{
@@ -254,18 +245,20 @@ int main(void) {
 				{
 					dbg_printf("[Wordle] Incorrect word entered.\n");
 					// Reset the current input for the turn
-					// TODO: Don't modify each index individually. Set as a string or something
-					inputs[turn].input[0] = '\0';
-					inputs[turn].input[1] = '\0';
-					inputs[turn].input[2] = '\0';
-					inputs[turn].input[3] = '\0';
-					inputs[turn].input[4] = '\0';
-					inputs[turn].input[5] = '\0';
+					strncpy(inputs[turn].input, "\0", 6);
 					inputIndex = 0;
 
 					// Show a notification saying that the word is wong
 					SetNotification("Word not in list!");
 				}
+			}
+
+			// Check for if the game has ended by running out of turns
+			if (turn >= MAX_TURNS) 
+			{
+				dbg_printf("[Wordle] Game over. (Ran out of turns)");
+				gameOver = true;
+				SetNotification(word);
 			}
 		}
 
